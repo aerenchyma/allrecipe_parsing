@@ -16,9 +16,7 @@ srv_num = rec_doc.find(id="lblYield").string
 	# class ingredient-amount + class ingredient-name
 	# (both of these are with in the p)
 
-test_ingr = rec_doc.findAll("p", {"class" : "fl-ing"}) # this is only finding the first ingredient, select for others
-
-# print test_ingr[3]
+test_ingr = rec_doc.findAll("p", {"class" : "fl-ing"}) 
 
 for grp in test_ingr:
 	if grp.find(id="lblIngAmount") is not None and grp.find(id="lblIngName") is not None:
