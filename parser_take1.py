@@ -1,5 +1,12 @@
 # recipe parser, Take 2
 
+# TODO: indexing by ingredients, searching for "all no milk" or w/e 
+# TODO: v/v2/o
+# TODO: all formatting questions (bolding ingredients in final print? TeX?)
+# TODO: 
+
+###
+
 import lxml.html as lh
 import urllib2
 from bs4 import BeautifulSoup
@@ -8,6 +15,8 @@ from bs4 import BeautifulSoup
 test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
 rec_doc = BeautifulSoup(urllib2.urlopen(test_recipe))
 ingreds_dict = {}
+
+stopwords = ["in", "on", "the", "of", "what"] # extend / grab from elsewhere??
 
 title = rec_doc.title.string.strip().replace(" - Allrecipes.com","")
 srv_num = rec_doc.find(id="lblYield").string
@@ -32,20 +41,27 @@ for grp in test_ingr:
 directions = rec_doc.find("div", "directions")
 alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacterwrap break")])
 
+# #check_words = [str(x) for x in alldirs.split() if x not in stopwords]
+# for word in check_words:
+# 	if word in ingreds_dict: # this will not work unless they're exactly the same though
+# 		# also bigrams like "sesame oil" are a problem
+# 		# should direct FROM the dict -- if that string is in the alldir string
+# 		alldirs.replace(word, "%s %s" % (ingreds_dict[word], word))
 
+for k in ingreds_dict:
+	if k in alldirs:
+		alldirs = alldirs.replace(k, "%s %s" % (ingreds_dict[k], k)) # works just a little for things that are exactly right
 
 #### TESTING
 
 print title
 #print srv_num
 
-for k in ingreds_dict:
-	print ingreds_dict[k], k
-
+# for k in ingreds_dict:
+# 	print ingreds_dict[k], k
+#print check_words
 print alldirs
-#print " ".join([y for y in [str(x.string) for x in test_ingr] if y != ''])
-# above: should be in-fxn, and will want to bold ingredients perhaps? formatting q TODO
-#print test_ingr
+
 
 
 
