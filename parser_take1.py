@@ -24,15 +24,25 @@ for grp in test_ingr:
 		amt, nm = (grp.find(id="lblIngAmount").string, grp.find(id="lblIngName").string)
 		amount_ingredient = "%s %s" % (amt, nm)
 		ingreds_dict[nm] = amt # need to keep track of ingredient names in list or dict so can put them into instructions
+		# with a hash of all ingredients, could send these to a (nosql db???) and index for which recipes have which
 
+# directions = rec_doc.find(id="msgDirections")
+# print directions.findAll("span", "plaincharacterwrap break")
 
+directions = rec_doc.find("div", "directions")
+alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacterwrap break")])
 
 
 
 #### TESTING
 
 print title
-print srv_num
+#print srv_num
+
+for k in ingreds_dict:
+	print ingreds_dict[k], k
+
+print alldirs
 #print " ".join([y for y in [str(x.string) for x in test_ingr] if y != ''])
 # above: should be in-fxn, and will want to bold ingredients perhaps? formatting q TODO
 #print test_ingr
