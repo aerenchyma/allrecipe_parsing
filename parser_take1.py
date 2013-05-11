@@ -47,13 +47,17 @@ alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacter
 # 		# also bigrams like "sesame oil" are a problem
 # 		# should direct FROM the dict -- if that string is in the alldir string
 # 		alldirs.replace(word, "%s %s" % (ingreds_dict[word], word))
-
+place = 0
 for lst in [x.split() for x in ingreds_dict]:
 	for w in lst:
-		if w in alldirs and w not in stopwords and w[-2:] != "ed":
+		if w in alldirs[place:] and w not in stopwords and w[-2:] != "ed": # basically never gonna want to id a verb this way -- generalization
 			print "WORD: ", w
 			print " ".join(lst)
-			alldirs = alldirs.replace(w, " ".join(lst))
+			orig_place = alldirs.find(w)
+			ingred = " ".join(lst)
+			alldirs = alldirs.replace(w, ingred)
+			place = alldirs.find(ingred) + len(ingred) + orig_place
+			# now, want to skip ahead in the search: len(" ".join(lst)) - len(w)
 
 
 
