@@ -48,9 +48,22 @@ alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacter
 # 		# should direct FROM the dict -- if that string is in the alldir string
 # 		alldirs.replace(word, "%s %s" % (ingreds_dict[word], word))
 
-for k in ingreds_dict:
-	if k in alldirs:
-		alldirs = alldirs.replace(k, "%s %s" % (ingreds_dict[k], k)) # works just a little for things that are exactly right
+for lst in [x.split() for x in ingreds_dict]:
+	for w in lst:
+		if w in alldirs and w not in stopwords and w[-2:] != "ed":
+			print "WORD: ", w
+			print " ".join(lst)
+			alldirs = alldirs.replace(w, " ".join(lst))
+
+
+
+# for k in ingreds_dict:
+# 	if k in alldirs:
+# 		alldirs = alldirs.replace(k, "%s %s" % (ingreds_dict[k], k)) # works just a little for things that are exactly right
+
+
+
+
 
 #### TESTING
 
@@ -60,7 +73,7 @@ print title
 # for k in ingreds_dict:
 # 	print ingreds_dict[k], k
 #print check_words
-print alldirs
+#print alldirs
 
 
 
