@@ -65,7 +65,7 @@ for w in [x for x in alldirs.split() if x != "" and x != " " and x not in stopwo
 	for ig_wlst in [y.split() for y in ingreds_dict]:
 		if w in ig_wlst and w not in replaced:
 			place = alldirs.find(w,place) + len(" ".join(ig_wlst))# plus some amount...?? 
-			alldirs = alldirs.replace(w, " ".join(ig_wlst))
+			alldirs = alldirs.replace(w, ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst))
 			replaced += ig_wlst
 
 
