@@ -79,7 +79,8 @@ al = [x.encode('utf-8') for x in  alldirs.split()]
 for item in al[:-1]:
 	if word_sans_comma(al[al.index(item)+1]) == word_sans_comma(item):
 		print item
-		del al[al.index(item)+1]
+		print al[al.index(item)]
+		del al[al.index(item)]
 alldirs = " ".join(al)
 
 
