@@ -16,7 +16,7 @@ test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
 rec_doc = BeautifulSoup(urllib2.urlopen(test_recipe))
 ingreds_dict = {}
 
-stopwords = ["in", "on", "the", "of", "what"] # extend / grab from elsewhere??
+stopwords = ["in", "on", "the", "of", "what", "and", "&"] # extend / grab from elsewhere??
 
 title = rec_doc.title.string.strip().replace(" - Allrecipes.com","")
 srv_num = rec_doc.find(id="lblYield").string
@@ -64,14 +64,23 @@ replaced = []
 for w in [x for x in alldirs.split() if x != "" and x != " " and x not in stopwords and x[-2:] != "ed"]:
 	for ig_wlst in [y.split() for y in ingreds_dict]:
 		if w in ig_wlst and w not in replaced:
-			place = alldirs.find(w,place) + len(" ".join(ig_wlst)) - len(w)# plus some amount...?? 
+			place = alldirs.find(w,place) + len(" ".join(ig_wlst))# plus some amount...?? 
 			alldirs = alldirs.replace(w, " ".join(ig_wlst))
 			replaced += ig_wlst
 
 
-# for k in ingreds_dict:
-# 	if k in alldirs:
-# 		alldirs = alldirs.replace(k, "%s %s" % (ingreds_dict[k], k)) # works just a little for things that are exactly right
+# look for double words in alldirs and replace them
+def word_sans_comma(w):
+	return w.replace(",","")
+
+
+ct = 0
+al = [x.encode('utf-8') for x in  alldirs.split()]
+for item in al[:-1]:
+	if word_sans_comma(al[al.index(item)+1]) == word_sans_comma(item):
+		print item
+		del al[al.index(item)+1]
+alldirs = " ".join(al)
 
 
 
