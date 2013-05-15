@@ -48,17 +48,25 @@ alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacter
 # 		# should direct FROM the dict -- if that string is in the alldir string
 # 		alldirs.replace(word, "%s %s" % (ingreds_dict[word], word))
 place = 0
-for lst in [x.split() for x in ingreds_dict]:
-	for w in lst:
-		if w in alldirs[place:] and w not in stopwords and w[-2:] != "ed": # basically never gonna want to id a verb this way -- generalization
-			print "WORD: ", w
-			print " ".join(lst)
-			orig_place = alldirs.find(w)
-			ingred = " ".join(lst)
-			alldirs = alldirs.replace(w, ingred)
-			place = alldirs.find(ingred) + len(ingred) + orig_place
-			# now, want to skip ahead in the search: len(" ".join(lst)) - len(w)
-
+# for lst in [x.split() for x in ingreds_dict]:
+# 	for w in lst:
+# 		if w in alldirs[place:] and w not in stopwords and w[-2:] != "ed": # basically never gonna want to id a verb this way -- generalization
+# 			print "PLACE:", place
+# 			print "WORD: ", w
+# 			print " ".join(lst)
+# 			orig_place = alldirs.find(w)
+# 			ingred = " ".join(lst)
+# 			alldirs = alldirs.replace(w, ingred)
+# 			place += alldirs.find(ingred) + len(ingred) + orig_place - len(w)
+# 			#print "PLACE: ", place
+# 			# now, want to skip ahead in the search: len(" ".join(lst)) - len(w)
+replaced = []
+for w in [x for x in alldirs.split() if x != "" and x != " " and x not in stopwords and x[-2:] != "ed"]:
+	for ig_wlst in [y.split() for y in ingreds_dict]:
+		if w in ig_wlst and w not in replaced:
+			place = alldirs.find(w,place) + len(" ".join(ig_wlst)) - len(w)# plus some amount...?? 
+			alldirs = alldirs.replace(w, " ".join(ig_wlst))
+			replaced += ig_wlst
 
 
 # for k in ingreds_dict:
@@ -77,7 +85,7 @@ print title
 # for k in ingreds_dict:
 # 	print ingreds_dict[k], k
 #print check_words
-#print alldirs
+print alldirs
 
 
 
