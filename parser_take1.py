@@ -12,7 +12,13 @@ import urllib2
 from bs4 import BeautifulSoup
 
 
-test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
+def word_sans_comma(w):
+	w = w.replace(",","") # because replacing is destructive and need a non-destructive fxn
+	w = w.replace(".","")
+	return w
+
+#test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
+test_recipe = "http://allrecipes.com/recipe/best-chocolate-chip-cookies/"
 rec_doc = BeautifulSoup(urllib2.urlopen(test_recipe))
 ingreds_dict = {}
 
@@ -39,39 +45,23 @@ for grp in test_ingr:
 # print directions.findAll("span", "plaincharacterwrap break")
 
 directions = rec_doc.find("div", "directions")
+#print directions
 alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacterwrap break")])
 
-# #check_words = [str(x) for x in alldirs.split() if x not in stopwords]
-# for word in check_words:
-# 	if word in ingreds_dict: # this will not work unless they're exactly the same though
-# 		# also bigrams like "sesame oil" are a problem
-# 		# should direct FROM the dict -- if that string is in the alldir string
-# 		alldirs.replace(word, "%s %s" % (ingreds_dict[word], word))
 place = 0
-# for lst in [x.split() for x in ingreds_dict]:
-# 	for w in lst:
-# 		if w in alldirs[place:] and w not in stopwords and w[-2:] != "ed": # basically never gonna want to id a verb this way -- generalization
-# 			print "PLACE:", place
-# 			print "WORD: ", w
-# 			print " ".join(lst)
-# 			orig_place = alldirs.find(w)
-# 			ingred = " ".join(lst)
-# 			alldirs = alldirs.replace(w, ingred)
-# 			place += alldirs.find(ingred) + len(ingred) + orig_place - len(w)
-# 			#print "PLACE: ", place
-# 			# now, want to skip ahead in the search: len(" ".join(lst)) - len(w)
+
 replaced = []
-for w in [x for x in alldirs.split() if x != "" and x != " " and x not in stopwords and x[-2:] != "ed"]:
+for w in [word_sans_comma(x) for x in alldirs.split() if x != "" and x != " " and "ed" not in x[-3:]]:
 	for ig_wlst in [y.split() for y in ingreds_dict]:
 		if w in ig_wlst and w not in replaced:
-			place = alldirs.find(w,place) + len(" ".join(ig_wlst))# plus some amount...?? 
+			#if ig_wlst[ig_wlst.index(w)-1][-2:] != "ly":
+			#print ig_wlst[ig_wlst.index(w)-1]
 			alldirs = alldirs.replace(w, ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst))
+			place = alldirs.find(w,place) + len(" ".join(ig_wlst))# plus some amount...?? 
+			
 			replaced += ig_wlst #hmm
 
 
-# look for double words in alldirs and replace them
-def word_sans_comma(w):
-	return w.replace(",","")
 
 
 ct = 0
@@ -90,11 +80,9 @@ alldirs = " ".join(al)
 #### TESTING
 
 print title
-#print srv_num
+for k in ingreds_dict:
+	print ingreds_dict[k], k
 
-# for k in ingreds_dict:
-# 	print ingreds_dict[k], k
-#print check_words
 print alldirs
 
 
