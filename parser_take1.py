@@ -10,11 +10,14 @@
 import lxml.html as lh
 import urllib2
 from bs4 import BeautifulSoup
+import re
 
 
 def word_sans_comma(w):
-	w = w.replace(",","") # because replacing is destructive and need a non-destructive fxn
-	w = w.replace(".","")
+	if w[-1] =="," or w[-1] == ".":
+		print "comma repl", w
+		w = w.replace(",","") # because replacing is destructive and need a non-destructive fxn
+		w = w.replace(".","")
 	return w
 
 #test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
@@ -22,7 +25,10 @@ test_recipe = "http://allrecipes.com/recipe/best-chocolate-chip-cookies/"
 rec_doc = BeautifulSoup(urllib2.urlopen(test_recipe))
 ingreds_dict = {}
 
-stopwords = ["in", "on", "the", "of", "what", "and", "&"] # extend / grab from elsewhere??
+stopwords = ["in", "on", "the", "of", "what", "and", "&", "are", "you", "a", "an", "or", "why"] # extend / grab from elsewhere??
+cooking_verbs = ["browned", "softened"] # add more if not get from elsewhere/learning
+
+
 
 title = rec_doc.title.string.strip().replace(" - Allrecipes.com","")
 srv_num = rec_doc.find(id="lblYield").string
@@ -38,7 +44,7 @@ for grp in test_ingr:
 		#print "%s %s" % (grp.find(id="lblIngAmount").string, grp.find(id="lblIngName").string)
 		amt, nm = (grp.find(id="lblIngAmount").string, grp.find(id="lblIngName").string)
 		amount_ingredient = "%s %s" % (amt, nm)
-		ingreds_dict[nm] = amt # need to keep track of ingredient names in list or dict so can put them into instructions
+		ingreds_dict[nm.encode('utf-8')] = amt.encode('utf-8') # need to keep track of ingredient names in list or dict so can put them into instructions
 		# with a hash of all ingredients, could send these to a (nosql db???) and index for which recipes have which
 
 # directions = rec_doc.find(id="msgDirections")
@@ -50,18 +56,27 @@ alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacter
 
 place = 0
 
+print ingreds_dict
+
+debugging = []
 replaced = []
-for w in [word_sans_comma(x) for x in alldirs.split() if x != "" and x != " " and "ed" not in x[-3:]]:
+for w in [word_sans_comma(x).encode('utf-8') for x in alldirs.split() if x != "" and x != " " and "ed" not in x[-3:]]:
+		
+	#print "adding ed: ", w + "ed" # never get brown here, currently
 	for ig_wlst in [y.split() for y in ingreds_dict]:
-		if w in ig_wlst and w not in replaced:
-			#if ig_wlst[ig_wlst.index(w)-1][-2:] != "ly":
-			#print ig_wlst[ig_wlst.index(w)-1]
-			alldirs = alldirs.replace(w, ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst))
-			place = alldirs.find(w,place) + len(" ".join(ig_wlst))# plus some amount...?? 
+		#print ig_wlst
+		ig_wlst = [x.encode('utf-8') for x in ig_wlst]
+		if w in ig_wlst and w.encode('utf-8') not in [x.encode('utf-8') for x in replaced]: #and w.encode('utf-8') not in " ".join(ig_wlst): # encoding consistent enough here?
+			#print "index",ig_wlst.index(w), w
+			#if not 
+			#alldirs = alldirs.replace(w, ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst)) # replaces all instances! argh! want to replace all instances outside of substrs that are in cooking_verbs, or some other sol'n
+			alldirs = re.sub(r"%s[^a-zA-Z] " % w, ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst), alldirs)
+			print "End of ALLDIRS: ", alldirs[-20:]
+			place = alldirs.find(w,place) + len(" ".join(ig_wlst))# plus some amount...?? or not
 			
-			replaced += ig_wlst #hmm
+			replaced += [x.encode('utf-8') for x in ig_wlst] #hmm
 
-
+print replaced
 
 
 ct = 0
@@ -84,7 +99,6 @@ for k in ingreds_dict:
 	print ingreds_dict[k], k
 
 print alldirs
-
 
 
 
