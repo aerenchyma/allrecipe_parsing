@@ -70,7 +70,11 @@ for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and
 			#alldirs = alldirs.replace(w, ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst)) # replaces ALL instances of str
 			#print ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst)
 			subst_str = ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst) + " " # note spacing changes -- TODO make neater/clearer what's going on
-			alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", " " + " " + subst_str + " " if w[-1] != "." else subst_str + ". ", alldirs) 
+			if w[-1] == ".":
+				punct_add = ". "
+			elif w[-1] == ",":
+				punct_add = ","
+			alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", " " + " " + subst_str + " " if w[-1].isalnum() and punct_add else subst_str.rstrip() + punct_add, alldirs) 
 			#print "End of ALLDIRS: ", alldirs[-20:]
 			place = alldirs.find(w,place) + len(" ".join(ig_wlst))# plus some amount...?? or not
 			
