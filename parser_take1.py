@@ -15,7 +15,7 @@ import re
 
 def word_sans_comma(w):
 	if w[-1] =="," or w[-1] == ".":
-		print "comma repl", w
+		#print "comma repl", w
 		w = w.replace(",","") # because replacing is destructive and need a non-destructive fxn
 		w = w.replace(".","")
 	return w
@@ -60,18 +60,19 @@ print ingreds_dict
 
 debugging = []
 replaced = []
-for w in [word_sans_comma(x).encode('utf-8') for x in alldirs.split() if x != "" and x != " " and "ed" not in x[-3:]]:
-		
+for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and "ed" not in x[-3:]]:
+	print "w is:", w
 	#print "adding ed: ", w + "ed" # never get brown here, currently
 	for ig_wlst in [y.split() for y in ingreds_dict]:
 		#print ig_wlst
 		ig_wlst = [x.encode('utf-8') for x in ig_wlst]
-		if w in ig_wlst and w.encode('utf-8') not in [x.encode('utf-8') for x in replaced]: #and w.encode('utf-8') not in " ".join(ig_wlst): # encoding consistent enough here?
+		if (word_sans_comma(w) in ig_wlst or w in ig_wlst) and word_sans_comma(w.encode('utf-8')) not in [x.encode('utf-8') for x in replaced]: #and w.encode('utf-8') not in " ".join(ig_wlst): # encoding consistent enough here?
 			#print "index",ig_wlst.index(w), w
 			#if not 
 			#alldirs = alldirs.replace(w, ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst)) # replaces all instances! argh! want to replace all instances outside of substrs that are in cooking_verbs, or some other sol'n
-			alldirs = re.sub(r"%s[^a-zA-Z] " % w, ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst), alldirs)
-			print "End of ALLDIRS: ", alldirs[-20:]
+			print ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst)
+			alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", " " + ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst) + "  ", alldirs)
+			#print "End of ALLDIRS: ", alldirs[-20:]
 			place = alldirs.find(w,place) + len(" ".join(ig_wlst))# plus some amount...?? or not
 			
 			replaced += [x.encode('utf-8') for x in ig_wlst] #hmm
