@@ -46,23 +46,28 @@ alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacter
 
 place = 0
 
+## TODO: if you've replaced WITH the same word twice, stop replacing it -- it's silly
+## are there indicators besides "the" (which doesn't work b/c recipe is already context)? unlikely.
+
 # keep track of words that have been replaced to avoid unfortunate doubling
 replaced = []
-
-for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and "ed" not in x[-3:]]:
+punct_add = ""
+for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and "ed" not in x[-3:] and x not in stopwords]:
 	print "w is:", w
 	for ig_wlst in [y.split() for y in ingreds_dict]:
 		ig_wlst = [x.encode('utf-8') for x in ig_wlst]
-		if (word_sans_comma(w) in ig_wlst or w in ig_wlst) and word_sans_comma(w.encode('utf-8')) not in [x.encode('utf-8') for x in replaced]: #and w.encode('utf-8') not in " ".join(ig_wlst): # TODO improve consistency of encoding
+		if (word_sans_comma(w) in ig_wlst or w in ig_wlst) and word_sans_comma(w.encode('utf-8')) not in [x.encode('utf-8') for x in replaced] and w.encode('utf-8') not in [x.encode('utf-8') for x in replaced]: #and w.encode('utf-8') not in " ".join(ig_wlst): # TODO improve consistency of encoding
 			subst_str = ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst) + " " # note spacing changes -- TODO make neater/clearer what's going on
 			if w[-1] == ".":
 				punct_add = ". "
 			elif w[-1] == ",":
-				punct_add = ","
-			alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", " " + " " + subst_str + " " if w[-1].isalnum() else subst_str.rstrip() + punct_add, alldirs) # assume if isalnum, no punct_add -- safe?
+				punct_add = ", "
+			alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", " " + " " + subst_str + " " if w[-1].isalnum() and punct_add != "" else subst_str.rstrip() + punct_add, alldirs) # assume if isalnum, no punct_add -- safe?
 			place = alldirs.find(w,place) + len(" ".join(ig_wlst)) # correct amt
 			
 			replaced += [x.encode('utf-8') for x in ig_wlst] # working now
+
+print replaced
 
 ct = 0
 al = [x.encode('utf-8') for x in  alldirs.split()]
