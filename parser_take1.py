@@ -69,9 +69,9 @@ for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and
 		if (word_sans_comma(w) in ig_wlst or w in ig_wlst) and word_sans_comma(w.encode('utf-8')) not in [x.encode('utf-8') for x in replaced]: #and w.encode('utf-8') not in " ".join(ig_wlst): # encoding consistent enough here?
 			#print "index",ig_wlst.index(w), w
 			#if not 
-			#alldirs = alldirs.replace(w, ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst)) # replaces all instances! argh! want to replace all instances outside of substrs that are in cooking_verbs, or some other sol'n
+			#alldirs = alldirs.replace(w, ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst)) # replaces ALL instances of str
 			print ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst)
-			alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", " " + ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst) + "  ", alldirs)
+			alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", " " + ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst) + "  ", alldirs) # note the two spaces at the end to allow for easy dedupe of words
 			#print "End of ALLDIRS: ", alldirs[-20:]
 			place = alldirs.find(w,place) + len(" ".join(ig_wlst))# plus some amount...?? or not
 			
