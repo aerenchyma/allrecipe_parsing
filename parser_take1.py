@@ -59,52 +59,22 @@ place = 0
 replaced = []
 new_dirs_lines = []
 punct_add = " "
+for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and "ed" not in x[-3:] and x not in stopwords]:
+	print "w is:", w
+	for ig_wlst in [y.split() for y in ingreds_dict]:
+		ig_wlst = [x.encode('utf-8') for x in ig_wlst]
+		if (word_sans_comma(w) in ig_wlst or w in ig_wlst) and word_sans_comma(w.encode('utf-8')) not in [x.encode('utf-8') for x in replaced] and w.encode('utf-8') not in [x.encode('utf-8') for x in replaced]: #and w.encode('utf-8') not in " ".join(ig_wlst): # TODO improve consistency of encoding
+			subst_str = ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst) + " " # note spacing changes -- TODO make neater/clearer what's going on
+			if w[-1] == ".":
+				punct_add = ". "
+			elif w[-1] == ",":
+				punct_add = ", "
+			alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", " " + " " + subst_str + " " if w[-1].isalnum() and punct_add != "" else subst_str.rstrip() + punct_add, alldirs) # assume if isalnum, no punct_add -- safe?
+			place = alldirs.find(w,place) + len(" ".join(ig_wlst)) # correct amt
 
-alldirs_lines = [x.encode('utf-8') for x in alldirs.split(". ")]
+			replaced += [x.encode('utf-8') for x in ig_wlst] # working now
 
-#for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and "ed" not in word_sans_comma(x)[-2:] and x not in stopwords]:
-for ln in alldirs_lines:
-	for w in [x.encode('utf-8') for x in ln.split() if x != "" and x != " " and "ed" not in word_sans_comma(x)[-2:] and x not in stopwords]:
-		print "w is:", w
-		for ig_wlst in [y.split() for y in ingreds_dict]:
-			ig_wlst = [x.encode('utf-8') for x in ig_wlst]
-			if (word_sans_comma(w) in ig_wlst or w in ig_wlst) and word_sans_comma(w.encode('utf-8')) not in [x.encode('utf-8') for x in replaced] and w.encode('utf-8') not in [x.encode('utf-8') for x in replaced]: #and w.encode('utf-8') not in " ".join(ig_wlst): # TODO improve consistency of encoding
-				subst_str = " " + ingreds_dict[" ".join(ig_wlst)] + " " + " ".join(ig_wlst) # note spacing changes -- TODO make neater/clearer what's going on
-				if w[-1] == ".":
-					punct_add = ". "
-				elif w[-1] == ",":
-					punct_add = ", "
-				#if not alldirs[alldirs[place:].find(w)+len(w)].isalnum():
-				#to_repl = re.sub(re.escape(w) + r"[^a-zA-Z]*", lambda x: x.group(0).replace(word_sans_comma(w), subst_str))
-
-				if w in re.findall(re.escape(w) + r"[a-zA-Z]", ln):
-					#ln = ln.replace(word_sans_comma(w), subst_str)
-					new_dirs_lines.append(ln) 
-				elif w not in replaced: # still got past ig_wlst check
-					ln = ln.replace(word_sans_comma(w), subst_str)
-					replaced += [x.encode('utf-8') for x in ig_wlst] # working now
-					new_dirs_lines.append(ln)
-
-				# 	if w not in [x.encode('utf-8') for x in re.findall(re.escape(word_sans_comma(w)) + r"[^a-zA-Z]", ln)]:
-				# 		ln = ln.replace(word_sans_comma(w), subst_str) 
-				# 	new_dirs_lines.append(ln)
-
-				# if word_sans_comma(w) == w:
-				# 	ln = 
-				# 	#alldirs = alldirs.replace(w, subst_str) 
-				# else:
-				# 	alldirs = alldirs.replace(word_sans_comma(w), subst_str)
-				# 	place += 1
-				#alldirs = ". ".join(new_dirs_lines) #remake alldirs
-				#alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", "  " + subst_str + " " if w[-1].isalnum() and punct_add != "" else subst_str.rstrip() + punct_add, alldirs) # assume if isalnum, no punct_add -- safe?
-				
-				alldirs = ". ".join(new_dirs_lines)
-
-				place = alldirs.find(w,place) + len(" ".join(ig_wlst)) + 1 # correct amt?
-				
-				#replaced += [x.encode('utf-8') for x in ig_wlst] # working now
-				print alldirs
-print replaced
+#print replaced
 
 ct = 0
 al = [x.encode('utf-8') for x in  alldirs.split()]
