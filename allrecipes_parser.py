@@ -25,8 +25,8 @@ def word_sans_comma(w):
 
 ## recipe url entering options -- most for testing -- note that test_recipe variable has a dependency later on
 #test_recipe = sys.argv[1]
-test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
-#test_recipe = "http://allrecipes.com/recipe/best-chocolate-chip-cookies/"
+#test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
+test_recipe = "http://allrecipes.com/recipe/best-chocolate-chip-cookies/"
 
 rec_doc = BeautifulSoup(urllib2.urlopen(test_recipe))
 ingreds_dict = {}
@@ -142,7 +142,7 @@ for i in ingredient_strs:
 	recipe_str += "\n* %s" % i
 recipe_str += "\n\nDIRECTIONS:"
 for l in alldirs.split(". ")[:-1]:
-	recipe_str += "\n> %s." % l
+	recipe_str += "\n-> %s." % l
 recipe_str += "\n-> %s" % alldirs.split(". ")[-1]
 
 f.write(recipe_str)
