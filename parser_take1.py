@@ -19,11 +19,6 @@ def word_sans_comma(w):
 		w = w.replace(".","")
 	return w
 
-# def check_repl(match_str, w):
-# 	check = match_str.group(0).replace(w, "")
-# 	if check != "":
-# 		return 
-
 ## recipe url entering options 
 #test_recipe = sys.argv[1]
 #test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
@@ -33,6 +28,16 @@ rec_doc = BeautifulSoup(urllib2.urlopen(test_recipe))
 ingreds_dict = {}
 
 stopwords = ["in", "on", "the", "of", "what", "and", "&", "are", "you", "a", "an", "or", "why"] # extend / grab from elsewhere later TODO
+meat_words = ["chicken", "beef", "lamb", "venison", "meat", "turkey", "salami", "bologna", "ham"] # extend?
+dairy_words = ["cheese", "mozzerella", "mozzarella", "cheddar", "monterey jack", "colby", "colby jack", "swiss", "bleu cheese", "whey"] #extend -- coconut milk is a problem in this list
+other_nonvegan = ["egg"]
+all_nonvegan = meat_words + dairy_words + other_nonvegan
+
+# for category determination later
+vegan = True
+non_dairy = True
+veg = True
+omni = True
 
 title = rec_doc.title.string.strip().replace(" - Allrecipes.com","")
 srv_num = rec_doc.find(id="lblYield").string
@@ -51,16 +56,23 @@ alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacter
 place = 0
 
 ## TODO: if you've replaced WITH the same word twice, stop replacing it -- it's silly
-## are there indicators besides "the" (which doesn't work b/c recipe is already context)? unlikely.
-
-# also, still missing things as of night 2013/05/21
+## are there indicators besides "the" (which doesn't work b/c recipe is already context)? unlikely
 
 # keep track of words that have been replaced to avoid unfortunate doubling
 replaced = []
 new_dirs_lines = []
 punct_add = " "
 for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and "ed" not in x[-3:] and x not in stopwords]:
-	print "w is:", w
+	#control stmts for category determination
+	if w in meat_words:
+		vegan = False
+		veg = False
+	elif w in dairy_words:
+		vegan = False
+		non_dairy = False
+	elif w in other_nonvegan:
+		vegan = False
+
 	for ig_wlst in [y.split() for y in ingreds_dict]:
 		ig_wlst = [x.encode('utf-8') for x in ig_wlst]
 		if (word_sans_comma(w) in ig_wlst or w in ig_wlst) and word_sans_comma(w.encode('utf-8')) not in [x.encode('utf-8') for x in replaced] and w.encode('utf-8') not in [x.encode('utf-8') for x in replaced]: #and w.encode('utf-8') not in " ".join(ig_wlst): # TODO improve consistency of encoding
@@ -74,7 +86,6 @@ for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and
 
 			replaced += [x.encode('utf-8') for x in ig_wlst] # working now
 
-#print replaced
 
 ct = 0
 al = [x.encode('utf-8') for x in  alldirs.split()]
@@ -86,7 +97,25 @@ for item in al[:-1]:
 alldirs = " ".join(al)
 
 
+## collect necessary information
 
+# category determination
+
+
+
+recipe_title = title
+ingredient_strs = ["%s %s" % (ingreds_dict[k], k) for k in ingreds_dict.keys()]
+directions_str = alldirs
+
+category = "uncategorized" # just in case
+if veg:
+	category = "V"
+if non_dairy:
+	dairy = "Non-Dairy"
+if vegan: # order of these statements matters -- if vegan is also veg, but veg + vegan != non-dairy
+	category = "V2"
+if not vegan and not veg:
+	category = "O"
 
 
 #### TESTING
@@ -96,7 +125,7 @@ for k in ingreds_dict:
 	print ingreds_dict[k], k
 
 print alldirs
-print replaced
+#print replaced
 
 
 
