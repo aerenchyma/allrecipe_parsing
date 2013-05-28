@@ -5,6 +5,8 @@
 # TODO: indexing by ingredients
 # TODO: all formatting questions/alterations, TeX
 # TODO: storage for indexing
+# TODO: make less procedural
+# TODO: proper parser
 
 ###
 
