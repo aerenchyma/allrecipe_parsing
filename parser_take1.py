@@ -11,6 +11,7 @@ import urllib2
 from bs4 import BeautifulSoup
 import re
 import sys
+import argparse
 
 
 def word_sans_comma(w):
@@ -29,7 +30,7 @@ ingreds_dict = {}
 
 stopwords = ["in", "on", "the", "of", "what", "and", "&", "are", "you", "a", "an", "or", "why"] # extend / grab from elsewhere later TODO
 meat_words = ["chicken", "beef", "lamb", "venison", "meat", "turkey", "salami", "bologna", "ham"] # extend?
-dairy_words = ["cheese", "mozzerella", "mozzarella", "cheddar", "monterey jack", "colby", "colby jack", "swiss", "bleu cheese", "whey"] #extend -- coconut milk is a problem in this list
+dairy_words = ["cheese", "butter", "milk", "mozzerella", "mozzarella", "cheddar", "monterey jack", "colby", "colby jack", "swiss", "bleu cheese", "whey"] #extend -- coconut milk is a problem in this list
 other_nonvegan = ["egg"]
 all_nonvegan = meat_words + dairy_words + other_nonvegan
 
@@ -64,13 +65,13 @@ new_dirs_lines = []
 punct_add = " "
 for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and "ed" not in x[-3:] and x not in stopwords]:
 	#control stmts for category determination
-	if w in meat_words:
+	if word_sans_comma(w) in meat_words or word_sans_comma(w)+"s" in meat_words:
 		vegan = False
 		veg = False
-	elif w in dairy_words:
+	elif word_sans_comma(w) in dairy_words or word_sans_comma(w)+"s" in dairy_words:
 		vegan = False
 		non_dairy = False
-	elif w in other_nonvegan:
+	elif word_sans_comma(w) in other_nonvegan or word_sans_comma(w)+"s" in other_nonvegan:
 		vegan = False
 
 	for ig_wlst in [y.split() for y in ingreds_dict]:
@@ -91,8 +92,8 @@ ct = 0
 al = [x.encode('utf-8') for x in  alldirs.split()]
 for item in al[:-1]:
 	if word_sans_comma(al[al.index(item)+1]) == word_sans_comma(item):
-		print item
-		print al[al.index(item)]
+		#print item
+		#print al[al.index(item)]
 		del al[al.index(item)]
 alldirs = " ".join(al)
 
@@ -108,6 +109,7 @@ ingredient_strs = ["%s %s" % (ingreds_dict[k], k) for k in ingreds_dict.keys()]
 directions_str = alldirs
 
 category = "uncategorized" # just in case
+dairy = "incl Dairy"
 if veg:
 	category = "V"
 if non_dairy:
@@ -120,16 +122,17 @@ if not vegan and not veg:
 
 #### TESTING
 
-print title
-for k in ingreds_dict:
-	print ingreds_dict[k], k
+print title, ";", category, ";", dairy
+print "url: <%s>" % test_recipe 
+# for k in ingreds_dict:
+# 	print ingreds_dict[k], k
+print "\nIngredients Needed:"
+for i in ingredient_strs:
+	print "* %s" % i 
 
+print "\nDIRECTIONS:"
 print alldirs
 #print replaced
 
 
-
-
-
-
-
+## Create Document
