@@ -1,8 +1,10 @@
 # recipe parser
+# save in directory for text file recipe; will generate files of parsed recipes 
+# (currently in plain text, not formatted TODO)
 
-# TODO: indexing by ingredients, searching for "all no milk" or w/e 
-# TODO: v/v2/o
-# TODO: all formatting questions/alterations
+# TODO: indexing by ingredients
+# TODO: all formatting questions/alterations, TeX
+# TODO: storage for indexing
 
 ###
 
@@ -21,8 +23,8 @@ def word_sans_comma(w):
 
 ## recipe url entering options -- most for testing -- note that test_recipe variable has a dependency later on
 #test_recipe = sys.argv[1]
-#test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
-test_recipe = "http://allrecipes.com/recipe/best-chocolate-chip-cookies/"
+test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
+#test_recipe = "http://allrecipes.com/recipe/best-chocolate-chip-cookies/"
 
 rec_doc = BeautifulSoup(urllib2.urlopen(test_recipe))
 ingreds_dict = {}
@@ -48,7 +50,7 @@ for grp in test_ingr:
 		amt, nm = (grp.find(id="lblIngAmount").string, grp.find(id="lblIngName").string)
 		amount_ingredient = "%s %s" % (amt, nm)
 		ingreds_dict[nm.encode('utf-8')] = amt.encode('utf-8') # need to keep track of ingredient names for instrs
-		# hash -> mongodb?? for indexing? a thought
+		# hash |-> db -- a thought..
 
 directions = rec_doc.find("div", "directions")
 alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacterwrap break")])
@@ -81,7 +83,7 @@ for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and
 			elif w[-1] == ",":
 				punct_add = ", "
 			alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", " " + " " + subst_str + " " if w[-1].isalnum() and punct_add != "" else subst_str.rstrip() + punct_add, alldirs) # assume if isalnum, no punct_add -- safe?
-			place = alldirs.find(w,place) + len(" ".join(ig_wlst)) # correct amt
+			place = alldirs.find(w,place) + len(" ".join(ig_wlst)) # correct amt but not needed
 
 			replaced += [x.encode('utf-8') for x in ig_wlst] 
 
@@ -91,19 +93,16 @@ al = [x.encode('utf-8') for x in  alldirs.split()]
 for item in al[:-1]:
 	if word_sans_comma(al[al.index(item)+1]) == word_sans_comma(item):
 		del al[al.index(item)]
-alldirs = " ".join(al)
-
+alldirs = " ".join(al) 
 
 ## collect necessary information
-
-# category determination
-
-
 
 recipe_title = title
 ingredient_strs = ["%s %s" % (ingreds_dict[k], k) for k in ingreds_dict.keys()]
 directions_str = alldirs
+file_title = "_".join(recipe_title.split()) + ".txt"
 
+# category & dairy status determination
 category = "uncategorized" # just in case
 dairy = "incl Dairy"
 if veg:
@@ -116,8 +115,8 @@ if not vegan and not veg:
 	category = "O"
 
 
-#### TESTING
-
+#### TEST printing
+print file_title
 print title, ";", category, ";", dairy
 print "url: <%s>" % test_recipe 
 
@@ -126,8 +125,24 @@ for i in ingredient_strs:
 	print "* %s" % i 
 
 print "\nDIRECTIONS:"
-print alldirs
+#print alldirs
+for l in alldirs.split(". ")[:-1]:
+	print "-> %s." % l
+print "-> %s" % alldirs.split(". ")[-1] # last one won't take off "."
 #print replaced
 
+
+# save in text file
+f = open(file_title, "w") # create new file (unless exists already)
+# create string
+recipe_str = "%s; %s; %s\nurl: <%s>\n\nIngredients Needed:\n" % (recipe_title, category, dairy, test_recipe)
+for i in ingredient_strs:
+	recipe_str += "\n* %s" % i
+recipe_str += "\n\nDIRECTIONS:"
+for l in alldirs.split(". ")[:-1]:
+	recipe_str += "\n> %s." % l
+recipe_str += "\n-> %s" % alldirs.split(". ")[-1]
+
+f.write(recipe_str)
 
 ## Create Document
