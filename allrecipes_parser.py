@@ -1,9 +1,8 @@
-# recipe parser, Take 2
+# recipe parser
 
 # TODO: indexing by ingredients, searching for "all no milk" or w/e 
 # TODO: v/v2/o
-# TODO: all formatting questions (bolding ingredients in final print? TeX?)
-# TODO: 
+# TODO: all formatting questions/alterations
 
 ###
 
@@ -16,11 +15,11 @@ import argparse
 
 def word_sans_comma(w):
 	if w[-1] =="," or w[-1] == ".":
-		w = w.replace(",","") # because replacing is destructive and need non-destructive fxn
+		w = w.replace(",","") # because strings are immutable + need non-destructive fxn w/ return val
 		w = w.replace(".","")
 	return w
 
-## recipe url entering options 
+## recipe url entering options -- most for testing -- note that test_recipe variable has a dependency later on
 #test_recipe = sys.argv[1]
 #test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
 test_recipe = "http://allrecipes.com/recipe/best-chocolate-chip-cookies/"
@@ -57,9 +56,8 @@ alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacter
 place = 0
 
 ## TODO: if you've replaced WITH the same word twice, stop replacing it -- it's silly
-## are there indicators besides "the" (which doesn't work b/c recipe is already context)? unlikely
 
-# keep track of words that have been replaced to avoid unfortunate doubling
+# keep track of words that have been replaced to avoid doubling
 replaced = []
 new_dirs_lines = []
 punct_add = " "
@@ -85,15 +83,13 @@ for w in [x.encode('utf-8') for x in alldirs.split() if x != "" and x != " " and
 			alldirs = re.sub(re.escape(w) + r"[^a-zA-Z]", " " + " " + subst_str + " " if w[-1].isalnum() and punct_add != "" else subst_str.rstrip() + punct_add, alldirs) # assume if isalnum, no punct_add -- safe?
 			place = alldirs.find(w,place) + len(" ".join(ig_wlst)) # correct amt
 
-			replaced += [x.encode('utf-8') for x in ig_wlst] # working now
+			replaced += [x.encode('utf-8') for x in ig_wlst] 
 
 
 ct = 0
 al = [x.encode('utf-8') for x in  alldirs.split()]
 for item in al[:-1]:
 	if word_sans_comma(al[al.index(item)+1]) == word_sans_comma(item):
-		#print item
-		#print al[al.index(item)]
 		del al[al.index(item)]
 alldirs = " ".join(al)
 
@@ -124,8 +120,7 @@ if not vegan and not veg:
 
 print title, ";", category, ";", dairy
 print "url: <%s>" % test_recipe 
-# for k in ingreds_dict:
-# 	print ingreds_dict[k], k
+
 print "\nIngredients Needed:"
 for i in ingredient_strs:
 	print "* %s" % i 
