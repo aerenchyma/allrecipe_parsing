@@ -6,7 +6,8 @@
 # TODO: all formatting questions/alterations, TeX
 # TODO: storage for indexing
 # TODO: make less procedural
-# TODO: proper parser
+# TODO: consider parser (diff problems)
+# TODO: anywhere esp useful for min ed dist?
 
 ###
 
@@ -23,17 +24,19 @@ def word_sans_comma(w):
 		w = w.replace(".","")
 	return w
 
-## recipe url entering options -- most for testing -- note that test_recipe variable has a dependency later on
+## recipe url entering options for testing -- note that test_recipe variable has a dependency later on
 #test_recipe = sys.argv[1]
 #test_recipe = "http://allrecipes.com/Recipe/Mandarin-Chicken-Pasta-Salad/"
 #test_recipe = "http://allrecipes.com/recipe/best-chocolate-chip-cookies/"
-test_recipe = "http://allrecipes.com/Recipe/Chicken-Pot-Pie-IX/"
+# test_recipe = "http://allrecipes.com/Recipe/Chicken-Pot-Pie-IX/"
+test_recipe = "http://allrecipes.com/Recipe/Chicken-Teriyaki-with-Asparagus/"
 
 rec_doc = BeautifulSoup(urllib2.urlopen(test_recipe))
 ingreds_dict = {}
 
-stopwords = ["in", "on", "the", "of", "what", "and", "&", "are", "you", "a", "an", "or", "why"] # extend / grab from elsewhere later TODO
-meat_words = ["chicken", "beef", "lamb", "venison", "meat", "turkey", "salami", "bologna", "ham"] # extend?
+# TODO: get these things in a more sustainable/responsible way (?)
+stopwords = ["in", "on", "the", "of", "what", "and", "&", "are", "you", "a", "an", "or", "why"] 
+meat_words = ["chicken", "beef", "lamb", "venison", "meat", "turkey", "salami", "bologna", "ham"]
 dairy_words = ["cheese", "butter", "milk", "mozzerella", "mozzarella", "cheddar", "monterey jack", "colby", "colby jack", "swiss", "bleu cheese", "whey"] #extend -- coconut milk is a problem in this list
 other_nonvegan = ["egg"]
 all_nonvegan = meat_words + dairy_words + other_nonvegan
@@ -60,7 +63,7 @@ alldirs = " ".join([x.string for x in directions.findAll("span", "plaincharacter
 
 place = 0
 
-## TODO: if you've replaced WITH the same word twice, stop replacing it -- it's silly
+## TODO: if you've replaced WITH the same word twice, stop replacing it -- it's usually not harmful aside from other problems, but it's silly
 
 # keep track of words that have been replaced to avoid doubling
 replaced = []
@@ -107,15 +110,15 @@ file_title = "_".join(recipe_title.split()) + ".txt"
 
 # category & dairy status determination
 category = "uncategorized" # just in case
-dairy = "incl Dairy"
+dairy = "incl Dairy" # likely a separate thing from other categorizing
 if veg:
 	category = "V"
 if non_dairy:
 	dairy = "Non-Dairy"
-if vegan: # order of these statements matters -- if vegan is also veg, but veg + vegan != non-dairy
+if vegan: # order of these statements matters -- if vegan, is also veg, but veg + vegan != non-dairy if non-dairy has meat
 	category = "V2"
 if not vegan and not veg:
-	category = "O"
+	category = "O" # anything with meat is Omnivorous, may also be non-dairy
 
 
 #### TEST printing
@@ -132,8 +135,6 @@ print "\nDIRECTIONS:"
 for l in alldirs.split(". ")[:-1]:
 	print "-> %s." % l
 print "-> %s" % alldirs.split(". ")[-1] # last one won't take off "."
-#print replaced
-
 
 # save in text file
 f = open(file_title, "w") # create new file (unless exists already)
